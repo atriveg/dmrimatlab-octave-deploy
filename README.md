@@ -1,0 +1,227 @@
+# dmrimatlab-octave-deploy
+
+This is a set of wrapper scripts providing an interface to use the
+dmrimatlab software (https://github.com/atriveg/dmrimatlab) directly
+from the Linux command line over volumes contained in nifti files. You
+do not need to install any additional software to use this one, since
+the installation script will locally and automatically download and
+compile all the required components for you without root privileges
+(BUT you will need standard development tools such as cmake, C/C++
+and fortran compilers, preferably the GCC suite).
+
+## INSTALLING
+
+Within the folder where CMakeLists.txt is located:
+
+$ mkdir build
+
+$ cd build
+
+$ cmake -DBLAS_STRATEGY=OPENBLAS ../
+
+$ make
+
+You can temporarily or permanently add to your path the folder "install/bin"
+created inside the build folder:
+
+$ export PATH="${PATH}:/path/to/repo/build/install/bin"
+
+## USAGE
+
+$ dmrimatlab
+
+$ dmrimatlab help
+
+Show this help message
+
+$ dmrimatlab help command
+
+Shows the help of a particular command within the dmrimatlab toolbox "as it is".
+
+$ dmrimatlab command -input[#][:type]=value -input[#][:type]=value ...
+                -output[#]=value -output[#]=value ... -key=value -key=value ...
+
+This is a wrapper script that allows calling any function from the dmrimatlab
+toolbox (or even core Octave functions) directly from the command line (bash,
+zsh or your preferred one), and directly using diffusion MRI volumes (or any
+other accepted type of volume) contained in nifti files (only nifti files are
+supported by now).
+
++ The so-called "mandatory inputs" of the toolbox functions are passed with the
+  -input[#][:type] syntax, where:
+
+  - The ordinal # of each input is zero-based. Ordinals cannot be repeated, but
+    any of them can be omitted, and in this case an empty array [] will be passed
+    to the toolbox function. Alternatively, you can omit the ordinals for all
+    inputs, and then they will be passed to the toolbox function in the very same
+    order you used in the command line.
+
+  - The "type" helps the function decide how it should interpret the value of the
+    input. For example, a nifti file with 4-D volume might contain DWI signals,
+    or SH coefficients, or DTI components, or vector components... You may specify
+    the actual type of input suing one of [ vol | mask | vec | dti | sh | dwi |
+    atti | bvec | bval | raw | UNK ]. NOTE: most of the time you won't need to
+    make this type explicit, as long as either 1) it is not actually relevant or
+    2) the wrapper script will be able to automatically detect it. Use cases
+    where this is necessary include b-values and b-vectors provided in non-
+    standard file formats (i.e. others than .bval(s) and .bvec(s)) or nifti/mat
+    files containing attenuation signals as opposed to DWIs (see below for an
+    example on this).
+
+  - The value of each input may be either a file name (only nii and nii.gz are
+    allowed for medical imaging foramts; other allowed file types are: .bval,
+    .bvals, .bvec, .bvecs, .mat, .txt or .dat. Use .bval(s) and .bvec(s) so that
+    the software can appropriately and automatically interpret gradient tables)
+    or any expression that Octave can interpret, such as: true, [1;1;1], exp(-3),
+    Inf, or whatever other (but you'll probably have to quote them, see below
+    for some examples).
+
++ The outputs are managed in a similar way:
+
+  - The ordinals # can be either passed for all outputs or for none of them. In the
+    former case, remember the ordering is zero-based and no duplicates are allowed
+    (omitted ordinals stand for discarded outputs). In the latter case, the outputs
+    will be written in the same order you provided within the command line.
+
+  - The value of each output can be either a file name (nii/nii.gz, .mat, .bval(s),
+    .bvec(s), .txt, .dat) or the keyword "print" to show the corresponding output
+    on screen.
+
++ Optional arguments passed as <'key',value> pairs to the toolbox functions are
+  passed here as -key=value, so that any optional argument can be passed. The
+  value can be once again a file name (e.g. a .nii.gz volume with a mask) or any
+  string that Octave can parse (probably quoted).
+
++ Besides, some global optional arguments can be passed that will be directly
+  interpreted by the wrapper script and will have an effect over most of the
+  toolbox functions. They all begin with g_:
+
+  - g_b0th: the b-value threshold below which DWI channels are assumed to
+    correspond to baseline images. Changing this value will affect how DWI
+    volumes are converted to attenuation signals in those toolbox functions
+    that accept these signals.
+
+  - g_bmin, g_bmax: These two parameters together allow to prune the gradients
+    table of diffusion/attenuation signals. In case you set them, those DWI
+    channels whose b-value lies outside [g_bmin,g_bmax] will be discarded for
+    all the computations in the toolbox functions. They may be useful to avoid
+    using unsuitable b-values (>2,000 s/mm^2) for DTI estimation.
+
+## A COMPLETE EXAMPLE
+
+Assume we have a DWI volume hcp1007_crop.nii.gz, whose gradients table
+is stored in hcp1007_crop.bvec and hcp1007_crop.bval (NOTE: the b-values and
+b-vectors must always be stored in different files). We will estimate and
+remove a free-water compartment, then estimate the diffusion tensor on the
+corrected signal, then compute the FA.
+
+### Do not forget to add to your path the folder where dmrimatlab is located:
+
+$ export PATH="${PATH}:/path/to/install/dmrimatlab"
+
+### Compute a mask over the original DWI to avoid unnecessary computations:
+
+$ dmrimatlab dwi2otsuthreshold  \
+    -input0:dwi=hcp1007_crop.nii.gz -input1:bval=hcp1007_crop.bval \
+    -output0=print -output1=mask.nii.gz -kern="[1;1;1]/3" \
+    -bins=100 -allchnl=true
+
+  - We have explicitly set -input0 and -input1, but it is not necessary
+      in this case because the toolbox function takes these two inputs in this
+      same order.
+  - Note there is no need to explicitly tell the function that input0 is a DWI
+      volume and input1 is a b-values file.
+  - Hence, the inputs could have alternatively been passed as:
+         -input:dwi=hcp1007_crop.nii.gz -input:bval=hcp1007_crop.bval
+      or simply:
+         -input=hcp1007_crop.nii.gz -input=hcp1007_crop.bval
+  - Note the kernel can be directly described with an Octave expression,
+      but you need to quote it into "" to avoid conflicts with bash.
+  - Note the first output is set to "print" so that the mask threshold is
+      printed on screen.
+
+### Compute the (non) FW-VF with atti2freewater (using the previous mask):
+
+$ dmrimatlab atti2freewater -g_b0th=100 \
+    -input0=hcp1007_crop.nii.gz \
+    -input1=hcp1007_crop.bvec -input2=hcp1007_crop.bval \
+    -output0=nfwvf.nii.gz -output2=print \
+    -output3=print -nu=-1 -lpar=nan -mask=mask.nii.gz
+
+  - Note -g_b0th=100 ensures all b-values below 100 will be considered
+      baselines when converting the DWI file to an attenuation signal.
+  - The same comments as before hold for the ordinals of the inputs.
+  - Note the toolbox function takes now an attenuation signal and not a
+      DWI. The wrapper script will internally convert hcp1007_crop.nii.gz
+      as needed.
+  - Note we discard output1, and print outputs 2 and 3 (optimal values found
+      for the regularization parameters) directly to the screen.
+
+### Correct the attenuation signal with the (non) FW-VF computed.
+
+   Since there is not a specific toolbox function performing this step, we will
+   use built-in Octave commands in the form of a user-defined anonymous function.
+   Note we want to solve for the confined water compartment in:
+          atti_total = f * atti_confined + (1-f) * exp(-bi*D0)
+   The command reads:
+
+$ dmrimatlab \
+    "@(atti,gi,bi,f,D0) deal( (atti-(1-f).*exp(-D0.*permute(bi,[2,3,4,1])))./f, gi, bi )" \
+    -g_b0th=100 -g_bmax=2000 \
+    -input0=hcp1007_crop.nii.gz -input1=hcp1007_crop.bvec \
+    -input2=hcp1007_crop.bval -input3=nfwvf.nii.gz -input4=3.0e-3 \
+    -output0=corrected_atti.nii.gz -output1=attgrads.bvec \
+    -output2=attbvals.bval
+
+  - There is no need to tell the script that it must first convert the DWI in
+      hcp1007_crop.nii.gz to an attenuation signal, since this is the default
+      behavior.
+  - The anonymous function outputs an attenuation signal, which will be stored
+      in a file named corrected_atti.nii.gz, that will not include baseline
+      channels. Thence, it will not match the gradients table in hcp1007_crop.bvec,
+      hcp1007_crop.bval (which DO contain baselines).
+  - To work-around this, the anonymous function returns as well the gradients
+      table as processed by the wrapper script (the deal command is used so that
+      several outputs can be returned). It is written to a new table attgrads.bvec,
+      attbvals.bval that now matches corrected_atti.nii.gz.
+  - Note we have used the -g_bmax option to prune all the b-values above the
+      limit for which the tensor model is commonly accepted to apply, bearing
+      in mind that the output signal will only be used to estimate the diffusion
+      tensor.
+
+### Estimate the diffusion tensor from the corrected attenuation signal:
+
+$ dmrimatlab atti2dti -input0:atti=corrected_atti.nii.gz \
+    -input1=attgrads.bvec -input2=attbvals.bval \
+    -output0=dti.nii.gz -wls=true -nonlinear=true \
+    -mask=mask.nii.gz
+
+  - NOTE: this is a particular use case where you DO NEED to explicitly set the
+      type of the input0 to "atti". What would happen otherwise?
+  - Since corrected_atti.nii.gz is a 4-D nifti, the script would assume by
+      default that it contains raw DWI channels. Since this is a atti2-like
+      command, it will try to convert from DWI channels to attenuation signals,
+      (which input0 is already made of), which will result in uncertain results
+      due to the lack of baseline images.
+
+### Compute the eigenvalues of the diffusion tensor:
+
+$ dmrimatlab dti2spectrum -input=dti.nii.gz \
+    -output3=lambda1.nii.gz -output4=lambda2.nii.gz \
+    -output5=lambda3.nii.gz \
+    -mask=mask.nii.gz
+
+  - Note we have deliberately skipped outputs 0-2 since, according to
+      the help of dti2spectrum, the first three outputs correspond to the
+      eigenvectors of the diffusion tensor, which we will not need.
+
+### Compute the FA map:
+
+$ dmrimatlab spectrum2scalar \
+    -input0=lambda1.nii.gz -input1=lambda2.nii.gz -input2=lambda3.nii.gz \
+    -output=famap.nii.gz -scalar="'fa'" -mask=mask.nii.gz
+
+  - Note it is necessary to pass the scalar argument as "'fa'" since the
+      toolbox function is expecting a string, and otherwise the wrapper script
+      will try to interpret "fa" as an Octave command making it crash because
+      "fa: variable does not exist".
