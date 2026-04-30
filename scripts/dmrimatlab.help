@@ -86,7 +86,7 @@ corrected signal, then compute the FA.
 
 0) Do not forget to add to your path the folder where dmrimatlab is located:
 
-$ export PATH="${PATH}:/path/to/install/dmrimatlab"
+$ export PATH="${PATH}:/path/to/install/bin/dmrimatlab"
 
 1) Compute a mask over the original DWI to avoid unnecessary computations:
 
