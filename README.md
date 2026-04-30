@@ -3,11 +3,11 @@
 This is a set of wrapper scripts providing an interface to use the
 dmrimatlab software (https://github.com/atriveg/dmrimatlab) directly
 from the Linux command line over volumes contained in nifti files. You
-do not need to install any additional software to use this one, since
-the installation script will locally and automatically download and
-compile all the required components for you without root privileges
-(BUT you will need standard development tools such as cmake, C/C++
-and fortran compilers, preferably the GCC suite).
+do not need to install any additional software to use this one (not even
+dmrimatlab or GNU Octave themselves), since the installation script will
+locally and automatically download and compile all the required components
+for you without root privileges (BUT you will need standard development
+tools such as cmake, C/C++ and fortran compilers, preferably the GCC suite).
 
 Authors:
 
