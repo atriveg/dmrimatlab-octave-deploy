@@ -9,17 +9,28 @@ compile all the required components for you without root privileges
 (BUT you will need standard development tools such as cmake, C/C++
 and fortran compilers, preferably the GCC suite).
 
+Authors:
+
+        Antonio Tristán Vega, Santiago Aja-Fernández, Guillem París, Tomasz Pieciak.
+        Laboratorio de Procesado de Imagen. Universidad de Valladolid
+        Spain
+
+In case you use the package for your own research, we ask you to kindly cite it as:
+
+        Antonio Tristán-Vega, Santiago Aja-Fernández,
+        Guillem París and Tomasz Pieciak.
+        "dMRI-Lab: advanced diffusion MRI with Matlab" [Online resource]
+        https://www.lpi.tel.uva.es/dmrilab September 2025.
+        Universidad de Valladolid. Spain.
+
 ## INSTALLING
 
 Within the folder where CMakeLists.txt is located:
 
-$ mkdir build
-
-$ cd build
-
-$ cmake -DBLAS_STRATEGY=OPENBLAS ../
-
-$ make
+    $ mkdir build
+    $ cd build
+    $ cmake -DBLAS_STRATEGY=OPENBLAS ../
+    $ make
 
 You can temporarily or permanently add to your path the folder "install/bin"
 created inside the build folder:
@@ -28,17 +39,16 @@ $ export PATH="${PATH}:/path/to/repo/build/install/bin"
 
 ## USAGE
 
-$ dmrimatlab
-
-$ dmrimatlab help
+    $ dmrimatlab
+    $ dmrimatlab help
 
 Show this help message
 
-$ dmrimatlab help command
+    $ dmrimatlab help command
 
 Shows the help of a particular command within the dmrimatlab toolbox "as it is".
 
-$ dmrimatlab command -input[#][:type]=value -input[#][:type]=value ...
+    $ dmrimatlab command -input[#][:type]=value -input[#][:type]=value ...
                 -output[#]=value -output[#]=value ... -key=value -key=value ...
 
 This is a wrapper script that allows calling any function from the dmrimatlab
@@ -117,11 +127,11 @@ corrected signal, then compute the FA.
 
 ### Do not forget to add to your path the folder where dmrimatlab is located:
 
-$ export PATH="${PATH}:/path/to/install/dmrimatlab"
+    $ export PATH="${PATH}:/path/to/install/dmrimatlab"
 
 ### Compute a mask over the original DWI to avoid unnecessary computations:
 
-$ dmrimatlab dwi2otsuthreshold  \
+    $ dmrimatlab dwi2otsuthreshold  \
     -input0:dwi=hcp1007_crop.nii.gz -input1:bval=hcp1007_crop.bval \
     -output0=print -output1=mask.nii.gz -kern="[1;1;1]/3" \
     -bins=100 -allchnl=true
@@ -142,7 +152,7 @@ $ dmrimatlab dwi2otsuthreshold  \
 
 ### Compute the (non) FW-VF with atti2freewater (using the previous mask):
 
-$ dmrimatlab atti2freewater -g_b0th=100 \
+    $ dmrimatlab atti2freewater -g_b0th=100 \
     -input0=hcp1007_crop.nii.gz \
     -input1=hcp1007_crop.bvec -input2=hcp1007_crop.bval \
     -output0=nfwvf.nii.gz -output2=print \
@@ -165,8 +175,8 @@ $ dmrimatlab atti2freewater -g_b0th=100 \
           atti_total = f * atti_confined + (1-f) * exp(-bi*D0)
    The command reads:
 
-$ dmrimatlab \
-    "@(atti,gi,bi,f,D0) deal( (atti-(1-f).*exp(-D0.*permute(bi,[2,3,4,1])))./f, gi, bi )" \
+    $ dmrimatlab \
+    "@(a,g,b,f,D0) deal( (a-(1-f).*exp(-D0.*permute(b,[2,3,4,1])))./f, g, b )" \
     -g_b0th=100 -g_bmax=2000 \
     -input0=hcp1007_crop.nii.gz -input1=hcp1007_crop.bvec \
     -input2=hcp1007_crop.bval -input3=nfwvf.nii.gz -input4=3.0e-3 \
@@ -191,7 +201,7 @@ $ dmrimatlab \
 
 ### Estimate the diffusion tensor from the corrected attenuation signal:
 
-$ dmrimatlab atti2dti -input0:atti=corrected_atti.nii.gz \
+    $ dmrimatlab atti2dti -input0:atti=corrected_atti.nii.gz \
     -input1=attgrads.bvec -input2=attbvals.bval \
     -output0=dti.nii.gz -wls=true -nonlinear=true \
     -mask=mask.nii.gz
@@ -206,7 +216,7 @@ $ dmrimatlab atti2dti -input0:atti=corrected_atti.nii.gz \
 
 ### Compute the eigenvalues of the diffusion tensor:
 
-$ dmrimatlab dti2spectrum -input=dti.nii.gz \
+    $ dmrimatlab dti2spectrum -input=dti.nii.gz \
     -output3=lambda1.nii.gz -output4=lambda2.nii.gz \
     -output5=lambda3.nii.gz \
     -mask=mask.nii.gz
@@ -217,7 +227,7 @@ $ dmrimatlab dti2spectrum -input=dti.nii.gz \
 
 ### Compute the FA map:
 
-$ dmrimatlab spectrum2scalar \
+    $ dmrimatlab spectrum2scalar \
     -input0=lambda1.nii.gz -input1=lambda2.nii.gz -input2=lambda3.nii.gz \
     -output=famap.nii.gz -scalar="'fa'" -mask=mask.nii.gz
 
