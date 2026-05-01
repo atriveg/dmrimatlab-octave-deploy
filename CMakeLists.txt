@@ -198,7 +198,7 @@ file(WRITE "${DEPLOY_HELPER}" [=[
 
     # Copy all auxiliary .m scripts
     message(STATUS "Copying .m scripts from ${SCRIPTS_SRC}...")
-    file(GLOB M_SCRIPTS "${SCRIPTS_SRC}/*.m" "${SCRIPTS_SRC}/dmrimatlab.help")
+    file(GLOB M_SCRIPTS "${SCRIPTS_SRC}/*.m" "${SCRIPTS_SRC}/dmrimatlab.help" "${SCRIPTS_SRC}/dmrimatlab.list")
     foreach(SCRIPT ${M_SCRIPTS})
         file(COPY "${SCRIPT}" DESTINATION "${OUTPUT_BIN}")
     endforeach()

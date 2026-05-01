@@ -15,8 +15,16 @@ addpath('@SCRIPTS_INSTALL_PATH@');
 setup__DMRIMatlab_toolbox('quiet',true,'nographics',true);
 
 function print_dmrimatlab_help
+  print_file_onscreen('dmrimatlab.help');
+end
+
+function print_dmrimatlab_list
+  print_file_onscreen('dmrimatlab.list');
+end
+
+function print_file_onscreen(filename)
   warning('off','Octave:data-file-in-path');
-  fid = fopen('dmrimatlab.help');
+  fid = fopen(filename);
   str = fgets(fid);
   while( ischar(str) )
     fprintf(1,'%s',str);
@@ -33,12 +41,16 @@ switch(nargs)
   case 1
     if(   strcmp( strtrim(argv{1}), 'help' )   )
       print_dmrimatlab_help;
+    elseif(   strcmp( strtrim(argv{1}), 'list' )   )
+      print_dmrimatlab_list;
     else
       feval(argv{1});
     end
   otherwise
     if(   strcmp( strtrim(argv{1}), 'help' )   )
-      help(argv{2})
+      help(argv{2});
+    elseif(   strcmp( strtrim(argv{1}), 'list' )   )
+      print_dmrimatlab_list;
     else
       cmd    = strtrim(args{1});
       cmdstr = cmd;

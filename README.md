@@ -39,14 +39,20 @@ $ export PATH="${PATH}:/path/to/repo/build/install/bin"
 
 ## USAGE
 
+Show this help message:
+
     $ dmrimatlab
     $ dmrimatlab help
 
-Show this help message
+Lists the available commands:
+
+    $ dmrimatlab list
+
+Shows the help of a particular command within the dmrimatlab toolbox "as it is":
 
     $ dmrimatlab help command
 
-Shows the help of a particular command within the dmrimatlab toolbox "as it is".
+Run a commnad:
 
     $ dmrimatlab command -input[#][:type]=value -input[#][:type]=value ...
                 -output[#]=value -output[#]=value ... -key=value -key=value ...
