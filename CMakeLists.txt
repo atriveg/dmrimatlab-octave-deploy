@@ -67,6 +67,7 @@ elseif(BLAS_STRATEGY STREQUAL "OPENBLAS")
 
         BUILD_COMMAND       ${CMAKE_COMMAND} --build <BINARY_DIR> -j${SAFE_JOBS}
         INSTALL_COMMAND     ${CMAKE_COMMAND} --install <BINARY_DIR>
+        STEP_TARGETS        install
     )
 
 
@@ -90,6 +91,7 @@ elseif(BLAS_STRATEGY STREQUAL "MKL")
         CONFIGURE_COMMAND  chmod +x <DOWNLOADED_FILE>
         BUILD_COMMAND      <DOWNLOADED_FILE> -a -s --install-dir=${INSTALL_PREFIX}/mkl --eula accept
         INSTALL_COMMAND    ""
+        STEP_TARGETS       install
     )
 
     set(BLAS_LIB "${MKL_ROOT}/lib/libmkl_rt.so")
@@ -139,10 +141,24 @@ ExternalProject_Add(octave_proj
 # --- STEPS 3, 4, & 5: TOOLBOX SETUP AND MEX COMPILATION ---
 set(TOOLBOX_DIR "${CMAKE_BINARY_DIR}/toolbox_build")
 
+# Define BLAS targets to trigger clean-up:
+set(BLAS_DEP_TARGET "")
+if(BLAS_STRATEGY STREQUAL "OPENBLAS")
+    set(BLAS_DEP_TARGET "openblas_proj-install")
+elseif(BLAS_STRATEGY STREQUAL "MKL")
+    set(BLAS_DEP_TARGET "mkl_proj-install")
+endif()
+
 # Create a helper CMake script to write the Octave build script perfectly
 set(WRITE_HELPER_SCRIPT "${CMAKE_BINARY_DIR}/write_m_script.cmake")
 file(WRITE "${WRITE_HELPER_SCRIPT}" [=[
-    file(WRITE "${M_FILE}" "cd('${SRC_DIR}'); setup__DMRIMatlab_toolbox; makefile_mexcode; exit();\n")
+    # Avoid writing the m-file if the toolbox does not exist yet
+    if(EXISTS "${SRC_DIR}/setup__DMRIMatlab_toolbox.m")
+        file(WRITE "${M_FILE}" "addpath('${SRC_DIR}'); cd('${SRC_DIR}'); setup__DMRIMatlab_toolbox; makefile_mexcode('${OCTAVE_MAKEFILE_ARG}'); exit();\n")
+    else()
+        # Create an empty m-file so that Otave does not crash
+        file(WRITE "${M_FILE}" "exit();\n")
+    endif()
 ]=])
 
 ExternalProject_Add(dmrimatlab_proj
@@ -159,11 +175,37 @@ ExternalProject_Add(dmrimatlab_proj
     COMMAND echo "MKL_ROOT=${MKL_ROOT}" >> <SOURCE_DIR>/mexcode/config.octave
     COMMAND echo "MKL_REDIST=${MKL_REDIST}" >> <SOURCE_DIR>/mexcode/config.octave
     # STEP 5: Create the .m script using the helper and execute it
-    COMMAND ${CMAKE_COMMAND} -DM_FILE=<BINARY_DIR>/build_mex.m -DSRC_DIR=<SOURCE_DIR> -P "${WRITE_HELPER_SCRIPT}"
+    COMMAND ${CMAKE_COMMAND}
+            -DM_FILE=<BINARY_DIR>/build_mex.m
+            -DSRC_DIR=<SOURCE_DIR>
+            "-DOCTAVE_MAKEFILE_ARG=build"
+            -P "${WRITE_HELPER_SCRIPT}"
     COMMAND /usr/bin/env -u MAKEFLAGS -u MFLAGS -u MAKELEVEL ${INSTALL_PREFIX}/octave/bin/octave --no-gui --no-window-system -q <BINARY_DIR>/build_mex.m
     INSTALL_COMMAND ""
 )
 
+# Make sure mex files are re-built only if necessary:
+set(BLAS_STAMP_FILE "${CMAKE_BINARY_DIR}/blas_strategy.stamp")
+file(WRITE "${BLAS_STAMP_FILE}.tmp" "${BLAS_STRATEGY}")
+execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different "${BLAS_STAMP_FILE}.tmp" "${BLAS_STAMP_FILE}")
+
+ExternalProject_Add_Step(dmrimatlab_proj clean_mex_logic
+    COMMAND ${CMAKE_COMMAND}
+            -DM_FILE=<BINARY_DIR>/clean_mex.m
+            -DSRC_DIR=<SOURCE_DIR>
+            "-DOCTAVE_MAKEFILE_ARG=clean"
+            -P "${WRITE_HELPER_SCRIPT}"
+
+    COMMAND /usr/bin/env -u MAKEFLAGS -u MFLAGS -u MAKELEVEL ${INSTALL_PREFIX}/octave/bin/octave --no-gui --no-window-system -q <BINARY_DIR>/clean_mex.m
+
+    DEPENDEE  download
+    DEPENDERS build
+
+    DEPENDS   "${BLAS_STAMP_FILE}" ${BLAS_DEP_TARGET}
+
+    LOG 1
+    COMMENT "Checking if MEX files need cleaning due to BLAS change..."
+)
 
 # --- STEP 6: FINAL DEPLOYMENT (ENFORCING ABSOLUTE PATHS) ---
 
@@ -198,7 +240,7 @@ file(WRITE "${DEPLOY_HELPER}" [=[
 
     # Copy all auxiliary .m scripts
     message(STATUS "Copying .m scripts from ${SCRIPTS_SRC}...")
-    file(GLOB M_SCRIPTS "${SCRIPTS_SRC}/*.m" "${SCRIPTS_SRC}/dmrimatlab.help")
+    file(GLOB M_SCRIPTS "${SCRIPTS_SRC}/*.m" "${SCRIPTS_SRC}/dmrimatlab.help" "${SCRIPTS_SRC}/dmrimatlab.list")
     foreach(SCRIPT ${M_SCRIPTS})
         file(COPY "${SCRIPT}" DESTINATION "${OUTPUT_BIN}")
     endforeach()
