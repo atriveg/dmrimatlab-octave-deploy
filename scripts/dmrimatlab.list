@@ -1,0 +1,112 @@
++ Diffusion gradients
+   - Design:
+      [> designGradients
+   - Manipulation:
+      [> decimateGradients
+
++ Noise prcessing, masks
+   - Masking:
+      [> dwi2otsuthreshold
+   - Noise processing:
+      [> dwi2noisestd
+      [> dwi2cleandwi
+
++ Diffusion Tensor Imaging (DTI, DT-MRI)
+   - Analysis:
+      [> atti2dti
+   - Quantification:
+      [> dti2spectrum
+      [> spectrum2scalar
+      [> spectrum2colorcode
+      [> spectrum2fdi
+
++ Spherical Harmonics (SH)
+   - Analysis:
+      [> atti2shadc
+      [> atti2shodf
+      [> atti2odf
+      [> signal2sh
+   - Synthesis:
+      [> sh2signal
+      [> shadc2adc
+   - Conversions:
+      [> sh2squaredsh
+      [> shadc2dti
+   - Quantification:
+      [> shodf2fdi
+   - Samplig:
+      [> shodf2samples
+
++ Higher Order Tensors (HOT)
+   - Synthesis:
+      [> hot2signal
+   - Conversions:
+      [> sh2hot
+      [> hot2sh
+
++ Single-shell non-Gaussian diffusion (AMURA)
+   - Quantification:
+      [> atti2amura
+   - Specialized quantification functions:
+      [> atti2artpp
+      [> atti2artop
+      [> atti2artap
+      [> atti2amsd
+      [> atti2apa
+      [> atti2dia
+      [> atti2ang
+
++ Free water estimation (FW-VF)
+   - Analysis:
+      [> atti2freewater
+      [> atti2freewaterTensor
+
++ Spherical convolution, spherical means (MiSFIT)
+   - Analysis:
+      [> atti2micro
+   - Synthesis:
+      [> micro2atti
+   - Orientation distribution functions (ODFs):
+      [> micro2shodf
+      [> micro2shsqrtodf
+   - Quantification:
+      [> micro2moments
+      [> micro2ng
+      [> micro2pa
+
++ Diffusion with Hermite functions (MAP-MRI/MAPL)
+   - Analysis:
+      [> atti2mapl
+   - Synthesis:
+      [> mapl2atti
+      [> mapl2eap
+   - Orientation distribution functions (ODFs):
+      [> mapl2odf
+   - Quantification:
+      [> mapl2index
+      [> mapl2fdi
+   - Sampling:
+      [> mapl2samples
+
++ Diffusion propagator in Cartesian grids (HYDI-DSI)
+   - Analysis:
+      [> atti2hydidsi
+   - Synthesis:
+      [> hydidsi2atti
+   - Orientation distribution functions (ODFs):
+      [> hydidsi2shodf
+   - Quantification:
+      [> hydidsi2index
+      [> hydidsi2ng
+
++ Tractography with Runge-Kutta integration of DTI
+   - Fiber-tracking algorithms:
+      [> dti2tractography
+   - Utilities:
+      [> labelmap2seeds
+
++ Tractography paths with minimal global costs
+   - Computation of global cost:
+      [> fastSweeping
+   - Fiber-tracking:
+      [> backTracing

@@ -3,6 +3,10 @@ $ dmrimatlab help
 
 Show this help message
 
+$ dmrimatlab list
+
+Lists the available commands
+
 $ dmrimatlab help command
 
 Shows the help of a particular command within the dmrimatlab toolbox "as it is".
