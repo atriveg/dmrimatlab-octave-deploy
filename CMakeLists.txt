@@ -41,12 +41,15 @@ if(BLAS_STRATEGY STREQUAL "SYSTEM")
     # Search for system-wide reference implementation (Netlib)
     find_library(BLAS_LIB NAMES blas)
     find_library(LAPACK_LIB NAMES lapack)
+    get_filename_component(BLAS_DIR "${BLAS_LIB}" DIRECTORY)
+    get_filename_component(LAPACK_DIR "${LAPACK_LIB}" DIRECTORY)
     set(BLAS_CONFIG "netlib")
     set(OCTAVE_BLAS_LIBS "-lblas -llapack")
+    set(OCTAVE_LDFLAGS "-L${BLAS_DIR} -L${LAPACK_LIB}")
     set(OCTAVE_LDFLAGS "")
     set(OCTAVE_CPPFLAGS "")
     message(STATUS "Using system BLAS: ${BLAS_LIB}")
-
+    #################################################################################################
 elseif(BLAS_STRATEGY STREQUAL "OPENBLAS")
     set(OPENBLAS_DIR "${CMAKE_BINARY_DIR}/openblas_build")
 
@@ -54,22 +57,25 @@ elseif(BLAS_STRATEGY STREQUAL "OPENBLAS")
         GIT_REPOSITORY      https://github.com/OpenMathLib/OpenBLAS.git
         GIT_TAG             v0.3.26
         PREFIX              ${OPENBLAS_DIR}
-        SOURCE_SUBDIR       ""
-
-        PATCH_COMMAND       sed -i "s/cmake_minimum_required(VERSION [0-9.]*)/cmake_minimum_required(VERSION 3.5)/" <SOURCE_DIR>/CMakeLists.txt
-
-        CMAKE_ARGS          -DCMAKE_INSTALL_PREFIX=${INSTALL_PREFIX}/openblas
-                            -DBUILD_SHARED_LIBS=ON
-                            -DNOFORTRAN=OFF
-                            -DCMAKE_C_FLAGS=-fPIC
-                            -DCMAKE_Fortran_FLAGS=-fPIC
-                            -DINTERFACE64=OFF
-
-        BUILD_COMMAND       ${CMAKE_COMMAND} --build <BINARY_DIR> -j${SAFE_JOBS}
-        INSTALL_COMMAND     ${CMAKE_COMMAND} --install <BINARY_DIR>
+        BUILD_IN_SOURCE     1
+        CONFIGURE_COMMAND   ""
+        BUILD_COMMAND       /usr/bin/env -u MAKEFLAGS -u MFLAGS -u MAKELEVEL make -j${SAFE_JOBS}
+                                DYNAMIC_ARCH=0
+                                BINARY=64
+                                INTERFACE=32
+                                NO_AFFINITY=1
+                                NO_WARMUP=1
+                                USE_OPENMP=1
+                                USE_LOCKING=1
+                                NO_CBLAS=1
+                                NO_LAPACKE=1
+                                CFLAGS=-fexceptions\ -fPIC\ -fno-omit-frame-pointer\ -pthread\ -fwrapv\ -O3\ -DNDEBUG
+                                CXXFLAGS=-fexceptions\ -fPIC\ -fno-omit-frame-pointer\ -pthread\ -fwrapv\ -O3\ -DNDEBUG
+                                FFLAGS=-O3
+        INSTALL_COMMAND     /usr/bin/env -u MAKEFLAGS -u MFLAGS -u MAKELEVEL make
+                                PREFIX=${INSTALL_PREFIX}/openblas install
         STEP_TARGETS        install
     )
-
 
     set(BLAS_LIB "${INSTALL_PREFIX}/openblas/lib/libopenblas.so")
     set(LAPACK_LIB "${INSTALL_PREFIX}/openblas/lib/libopenblas.so")
@@ -80,27 +86,69 @@ elseif(BLAS_STRATEGY STREQUAL "OPENBLAS")
     set(LOCAL_OPENBLAS_SUFFIX "local")
 
 elseif(BLAS_STRATEGY STREQUAL "MKL")
+    # Intel OneAPI MKL will be used only to build mex files.
     set(MKL_INSTALLER_URL "https://registrationcenter-download.intel.com/akdlm/IRC_NAS/6a17080f-f0de-41b9-b587-52f92512c59a/intel-onemkl-2025.3.1.11_offline.sh")
     set(MKL_TEMP_DIR "${CMAKE_BINARY_DIR}/mkl_download")
-    set(MKL_ROOT "${INSTALL_PREFIX}/mkl/mkl/latest")
+
+    # Set proper variables and libraries for mexfiles:
+    set(MKL_ROOT "${INSTALL_PREFIX}/mkl/mkl/latest" CACHE PATH "MKL Root" FORCE)
+    set(MKL_REDIST "${INSTALL_PREFIX}/mkl/compiler/latest/lib" CACHE PATH "MKL Redist" FORCE)
+    set(BLAS_CONFIG "mkl" CACHE STRING "Blas Config" FORCE)
+
+    # If the user has already installed MKL, the installation script
+    # throws an error, and it seems impossible to work around this. Check it:
+    file(WRITE "${CMAKE_BINARY_DIR}/check_mkl.cmake" "
+        if(EXISTS \"\$ENV{HOME}/intel\" AND IS_DIRECTORY \"\$ENV{HOME}/intel\")
+            message(FATAL_ERROR \"[MKL ERROR] Intel OneAPI MKL seems to be already installed by this user. You will need to delete ~/intel and ~/.intel before you proceed.\")
+        endif()
+    ")
 
     ExternalProject_Add(mkl_proj
-        URL                ${MKL_INSTALLER_URL}
+        URL                 ${MKL_INSTALLER_URL}
         DOWNLOAD_NO_EXTRACT TRUE
-        PREFIX             ${MKL_TEMP_DIR}
-        CONFIGURE_COMMAND  chmod +x <DOWNLOADED_FILE>
-        BUILD_COMMAND      <DOWNLOADED_FILE> -a -s --install-dir=${INSTALL_PREFIX}/mkl --eula accept
-        INSTALL_COMMAND    ""
-        STEP_TARGETS       install
+        PREFIX              ${MKL_TEMP_DIR}
+        # 1. Check if MKL is already present
+        CONFIGURE_COMMAND   ${CMAKE_COMMAND} -P "${CMAKE_BINARY_DIR}/check_mkl.cmake"
+        # 2. Just add exec permission
+        BUILD_COMMAND       chmod +x <DOWNLOADED_FILE>
+        # 3. Actual install
+        INSTALL_COMMAND     <DOWNLOADED_FILE> -a -s --install-dir=${INSTALL_PREFIX}/mkl --eula accept && rm -rf "$ENV{HOME}/intel" "$ENV{HOME}/.intel"
     )
 
-    set(BLAS_LIB "${MKL_ROOT}/lib/libmkl_rt.so")
-    set(LAPACK_LIB "${MKL_ROOT}/lib/libmkl_rt.so")
-    set(MKL_REDIST "${INSTALL_PREFIX}/mkl/compiler/latest/lib")
-    set(BLAS_CONFIG "mkl")
-    set(OCTAVE_BLAS_LIBS "-lmkl_rt")
-    set(OCTAVE_LDFLAGS "-L${MKL_ROOT}/lib")
-    set(OCTAVE_CPPFLAGS "")
+    # OpenBLAS is still necessary since GNU Octave does not seem to work with MKL:
+    set(OPENBLAS_DIR "${CMAKE_BINARY_DIR}/openblas_build")
+
+    ExternalProject_Add(openblas_proj
+        GIT_REPOSITORY      https://github.com/OpenMathLib/OpenBLAS.git
+        GIT_TAG             v0.3.26
+        PREFIX              ${OPENBLAS_DIR}
+        BUILD_IN_SOURCE     1
+        CONFIGURE_COMMAND   ""
+        BUILD_COMMAND       /usr/bin/env -u MAKEFLAGS -u MFLAGS -u MAKELEVEL make -j${SAFE_JOBS}
+                                DYNAMIC_ARCH=0
+                                BINARY=64
+                                INTERFACE=32
+                                NO_AFFINITY=1
+                                NO_WARMUP=1
+                                USE_OPENMP=1
+                                USE_LOCKING=1
+                                NO_CBLAS=1
+                                NO_LAPACKE=1
+                                CFLAGS=-fexceptions\ -fPIC\ -fno-omit-frame-pointer\ -pthread\ -fwrapv\ -O3\ -DNDEBUG
+                                CXXFLAGS=-fexceptions\ -fPIC\ -fno-omit-frame-pointer\ -pthread\ -fwrapv\ -O3\ -DNDEBUG
+                                FFLAGS=-O3
+        INSTALL_COMMAND     /usr/bin/env -u MAKEFLAGS -u MFLAGS -u MAKELEVEL make
+                                PREFIX=${INSTALL_PREFIX}/openblas install
+        STEP_TARGETS        install
+    )
+
+    # Set proper variables and libraries for GNU Octave:
+    set(BLAS_LIB "${INSTALL_PREFIX}/openblas/lib/libopenblas.so")
+    set(LAPACK_LIB "${INSTALL_PREFIX}/openblas/lib/libopenblas.so")
+    set(OCTAVE_BLAS_LIBS "-lopenblas")
+    set(OCTAVE_LDFLAGS "-L${INSTALL_PREFIX}/openblas/lib")
+    set(OCTAVE_CPPFLAGS "-I${INSTALL_PREFIX}/openblas/include/openblas")
+
 endif()
 
 # --- PREPARE DEPENDENCIES FOR OCTAVE ---
@@ -146,7 +194,7 @@ set(BLAS_DEP_TARGET "")
 if(BLAS_STRATEGY STREQUAL "OPENBLAS")
     set(BLAS_DEP_TARGET "openblas_proj-install")
 elseif(BLAS_STRATEGY STREQUAL "MKL")
-    set(BLAS_DEP_TARGET "mkl_proj-install")
+    set(MKL_PROJ_DEPEND "mkl_proj")
 endif()
 
 # Create a helper CMake script to write the Octave build script perfectly
@@ -162,7 +210,7 @@ file(WRITE "${WRITE_HELPER_SCRIPT}" [=[
 ]=])
 
 ExternalProject_Add(dmrimatlab_proj
-    DEPENDS         octave_proj
+    DEPENDS         octave_proj ${MKL_PROJ_DEPEND}
     GIT_REPOSITORY  https://github.com/atriveg/dmrimatlab.git
     GIT_TAG         main
     PREFIX          ${TOOLBOX_DIR}
