@@ -29,7 +29,11 @@ Within the folder where CMakeLists.txt is located:
 
     $ mkdir build
     $ cd build
-    $ cmake -DBLAS_FOR_MEX=OPENBLAS ../
+    # Choose one of the allowed BLAS implementations
+    # to build mex files against:
+    # $ cmake -DBLAS_FOR_MEX=SYSTEM ../
+    $ cmake -DBLAS_FOR_MEX=MKL ../
+    # $ cmake -DBLAS_FOR_MEX=OPENBLAS ../
     $ make
 
 You can temporarily or permanently add to your path the folder "install/bin"
