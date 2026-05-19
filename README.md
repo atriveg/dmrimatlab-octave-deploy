@@ -29,7 +29,7 @@ Within the folder where CMakeLists.txt is located:
 
     $ mkdir build
     $ cd build
-    $ cmake -DBLAS_STRATEGY=OPENBLAS ../
+    $ cmake -DBLAS_FOR_MEX=OPENBLAS ../
     $ make
 
 You can temporarily or permanently add to your path the folder "install/bin"
@@ -44,11 +44,11 @@ Show this help message:
     $ dmrimatlab
     $ dmrimatlab help
 
-Lists the available commands:
+List the available commands:
 
     $ dmrimatlab list
 
-Shows the help of a particular command within the dmrimatlab toolbox "as it is":
+Show the help of a particular command within the dmrimatlab toolbox "as it is":
 
     $ dmrimatlab help command
 
@@ -76,13 +76,13 @@ supported by now).
     input. For example, a nifti file with 4-D volume might contain DWI signals,
     or SH coefficients, or DTI components, or vector components... You may specify
     the actual type of input suing one of [ vol | mask | vec | dti | sh | dwi |
-    atti | bvec | bval | raw | UNK ]. NOTE: most of the time you won't need to
-    make this type explicit, as long as either 1) it is not actually relevant or
-    2) the wrapper script will be able to automatically detect it. Use cases
-    where this is necessary include b-values and b-vectors provided in non-
-    standard file formats (i.e. others than .bval(s) and .bvec(s)) or nifti/mat
-    files containing attenuation signals as opposed to DWIs (see below for an
-    example on this).
+    atti | bvec | bval | raw | string | UNK ]. NOTE: most of the time you won't
+    need to make this type explicit, as long as either 1) it is not actually
+    relevant or 2) the wrapper script will be able to automatically detect it. 
+    Use cases where this is necessary include b-values and b-vectors provided 
+    in non-standard file formats (i.e. others than .bval(s) and .bvec(s)) or 
+    nifti/mat files containing attenuation signals as opposed to DWIs (see below 
+    for an example on this).
 
   - The value of each input may be either a file name (only nii and nii.gz are
     allowed for medical imaging foramts; other allowed file types are: .bval,
@@ -235,9 +235,11 @@ corrected signal, then compute the FA.
 
     $ dmrimatlab spectrum2scalar \
     -input0=lambda1.nii.gz -input1=lambda2.nii.gz -input2=lambda3.nii.gz \
-    -output=famap.nii.gz -scalar="'fa'" -mask=mask.nii.gz
+    -output=famap.nii.gz -scalar=\'fa\' -mask=mask.nii.gz
 
-  - Note it is necessary to pass the scalar argument as "'fa'" since the
-      toolbox function is expecting a string, and otherwise the wrapper script
-      will try to interpret "fa" as an Octave command making it crash because
-      "fa: variable does not exist".
+  - Note it is necessary to scape the quotes as \'fa\', since the toolbox 
+     function is expecting a string, and otherwise the wrapper script will 
+     try to interpret 'fa' as an Octave command making it crash because the
+     variable fa does not exist.
+  - You can alternatively force the wrapper script to interpret a string as
+     it is by using: <-scalar:string=fa>.

@@ -1,3 +1,8 @@
++ File conversions
+   - DWI:
+      [> dwinii2nrrd
+      [> dwinrrd2nii
+
 + Diffusion gradients
    - Design:
       [> designGradients

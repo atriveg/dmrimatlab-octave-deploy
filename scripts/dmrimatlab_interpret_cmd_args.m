@@ -13,7 +13,9 @@ function [iargs,niihdr] = dmrimatlab_interpret_cmd_args(args,cmdstr,gargs)
     % If this is an input or an optional argument, we must
     % either interpret the Octave string or load a file.
     if(flag<2)
-      [intrpd.value,hdr] = load_actual_data(arg.value);
+      if(~strcmp(arg.argtype,'string'))
+        [intrpd.value,hdr] = load_actual_data(arg.value);
+      end
       % If a nifti header has not been set yet, use
       % the current one:
       if(isempty(niihdr))
@@ -26,7 +28,7 @@ function [iargs,niihdr] = dmrimatlab_interpret_cmd_args(args,cmdstr,gargs)
       end
       % Finally, check the argument type is a proper one:
       switch(intrpd.argtype)
-        case {'vec','sh','dwi','atti','dti','vol','raw','UNK'}
+        case {'vec','sh','dwi','atti','dti','vol','raw','string','UNK'}
           % Nothing to do
         case 'bval'
           intrpd.value = intrpd.value(:);
