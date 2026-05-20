@@ -15,6 +15,12 @@ Authors:
         Laboratorio de Procesado de Imagen. Universidad de Valladolid
         Spain
 
+Funding:
+
+        Agencia Estatal de Investigación, Gobierno de España:
+        PID2021-124407NB-I00
+        TED2021-130090B-I00
+
 In case you use the package for your own research, we ask you to kindly cite it as:
 
         Antonio Tristán-Vega, Santiago Aja-Fernández,
