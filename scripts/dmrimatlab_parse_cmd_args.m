@@ -129,7 +129,11 @@ function iargs = fix_ordinals(iargs)
     end
   end
 
-  fix_IO_iordinals('inputs');
-  fix_IO_iordinals('outputs');
+  if(length(iargs.inputs)>0)
+    fix_IO_iordinals('inputs');
+  end
+  if(length(iargs.outputs)>0)
+    fix_IO_iordinals('outputs');
+  end
 
 end
