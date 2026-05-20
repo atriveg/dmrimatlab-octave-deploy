@@ -15,6 +15,8 @@ function [iargs,niihdr] = dmrimatlab_interpret_cmd_args(args,cmdstr,gargs)
     if(flag<2)
       if(~strcmp(arg.argtype,'string'))
         [intrpd.value,hdr] = load_actual_data(arg.value);
+      else
+        hdr = [];
       end
       % If a nifti header has not been set yet, use
       % the current one:
