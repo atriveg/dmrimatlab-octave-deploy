@@ -30,7 +30,7 @@ function [iargs,niihdr] = dmrimatlab_interpret_cmd_args(args,cmdstr,gargs)
       end
       % Finally, check the argument type is a proper one:
       switch(intrpd.argtype)
-        case {'vec','sh','dwi','atti','dti','vol','raw','string','UNK'}
+        case {'vec','sh','dwi','atti','dti','vol','raw','coeff','string','UNK'}
           % Nothing to do
         case 'bval'
           intrpd.value = intrpd.value(:);
@@ -200,6 +200,12 @@ function atype = determine_arg_type(arg,szs,name,cmdstr)
             elseif(szs(4)==6)
               if(strncmp(cmdstr,'atti2',5))
                 atype = 'atti';
+              elseif(strncmp(cmdstr,'sh2',3))
+                atype = 'sh';
+              elseif(strncmp(cmdstr,'mapl2',5))
+                atype = 'coeff';
+              elseif(strncmp(cmdstr,'hydidsi2',8))
+                atype = 'coeff';
               else
                 atype = 'dti';
               end
@@ -216,6 +222,10 @@ function atype = determine_arg_type(arg,szs,name,cmdstr)
                 atype = 'dwi';
               elseif(strncmp(cmdstr,'sh2',3))
                 atype = 'sh';
+              elseif(strncmp(cmdstr,'mapl2',5))
+                atype = 'coeff';
+              elseif(strncmp(cmdstr,'hydidsi2',8))
+                atype = 'coeff';
               else
                 atype = 'dwi';
               end
