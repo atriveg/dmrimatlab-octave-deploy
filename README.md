@@ -2,12 +2,13 @@
 
 This is a set of wrapper scripts providing an interface to use the
 dmrimatlab software (https://github.com/atriveg/dmrimatlab) directly
-from the Linux command line over volumes contained in nifti files. You
-do not need to install any additional software to use this one (not even
-dmrimatlab or GNU Octave themselves), since the installation script will
-locally and automatically download and compile all the required components
-for you without root privileges (BUT you will need standard development
-tools such as cmake, C/C++ and fortran compilers, preferably the GCC suite).
+from the Linux command line over volumes contained in NIfTI or NRRD
+files. You do not need to install any additional software to use this one
+(not even dmrimatlab or GNU Octave themselves), since the installation
+script will locally and automatically download and compile all the required
+components for you without root privileges (BUT you will need standard
+development tools such as CMake, C/C++ and Fortran compilers, preferably
+the GCC suite).
 
 Authors:
 
@@ -70,8 +71,9 @@ Run a commnad:
 This is a wrapper script that allows calling any function from the dmrimatlab
 toolbox (or even core Octave functions) directly from the command line (bash,
 zsh or your preferred one), and directly using diffusion MRI volumes (or any
-other accepted type of volume) contained in nifti files (only nifti files are
-supported by now).
+other accepted type of volume) contained in NIfTI or NRRD files (these are the
+only accepted medical imaging formats, so only .nii, .nii.gz, .nrrd and .nhdr
+extensions are managed).
 
 + The so-called "mandatory inputs" of the toolbox functions are passed with the
   -input[#][:type] syntax, where:
@@ -83,24 +85,24 @@ supported by now).
     order you used in the command line.
 
   - The "type" helps the function decide how it should interpret the value of the
-    input. For example, a nifti file with 4-D volume might contain DWI signals,
-    or SH coefficients, or DTI components, or vector components... You may specify
-    the actual type of input suing one of [ vol | mask | vec | dti | sh | dwi |
-    atti | bvec | bval | raw | string | UNK ]. NOTE: most of the time you won't
-    need to make this type explicit, as long as either 1) it is not actually
-    relevant or 2) the wrapper script will be able to automatically detect it. 
-    Use cases where this is necessary include b-values and b-vectors provided 
-    in non-standard file formats (i.e. others than .bval(s) and .bvec(s)) or 
-    nifti/mat files containing attenuation signals as opposed to DWIs (see below 
-    for an example on this).
+    input. For example, a NIfTI (or NRRD) file with a 4-D volume might contain
+    DWI signals, or SH coefficients, or DTI components, or vector components...
+    You may specify the actual type of input suing one of [ vol | mask | vec
+    | dti | sh | dwi | atti | bvec | bval | raw | string | UNK ]. NOTE: most of
+    the time you won't need to make this type explicit, as long as either 1)
+    it is not actually relevant or 2) the wrapper script will be able to
+    automatically detect it. Use cases where this is necessary include b-values
+    and b-vectors provided in non-standard file formats (i.e. others than .bval(s)
+    and .bvec(s)) or NIfTI/NRRD/mat files containing attenuation signals as opposed
+    to DWIs (see below for an example on this).
 
-  - The value of each input may be either a file name (only nii and nii.gz are
-    allowed for medical imaging foramts; other allowed file types are: .bval,
-    .bvals, .bvec, .bvecs, .mat, .txt or .dat. Use .bval(s) and .bvec(s) so that
-    the software can appropriately and automatically interpret gradient tables)
-    or any expression that Octave can interpret, such as: true, [1;1;1], exp(-3),
-    Inf, or whatever other (but you'll probably have to quote them, see below
-    for some examples).
+  - The value of each input may be either a file name (only nii, nii.gz, nrrd and
+    nhdr are allowed as medical imaging formats; other allowed file types are:
+    .bval, .bvals, .bvec, .bvecs, .mat, .txt or .dat. Use .bval(s) and .bvec(s)
+    so that the software can appropriately and automatically interpret gradient
+    tables) or any expression that Octave can interpret, such as: true, [1;1;1],
+    exp(-3), Inf, or whatever other (but you'll probably have to quote them,
+    see below for some examples).
 
 + The outputs are managed in a similar way:
 
@@ -109,9 +111,9 @@ supported by now).
     (omitted ordinals stand for discarded outputs). In the latter case, the outputs
     will be written in the same order you provided within the command line.
 
-  - The value of each output can be either a file name (nii/nii.gz, .mat, .bval(s),
-    .bvec(s), .txt, .dat) or the keyword "print" to show the corresponding output
-    on screen.
+  - The value of each output can be either a file name (.nii/.nii.gz, .nrrd/.nhdr,
+    .mat, .bval(s), .bvec(s), .txt, .dat) or the keyword "print" to show the
+    corresponding output on screen.
 
 + Optional arguments passed as <'key',value> pairs to the toolbox functions are
   passed here as -key=value, so that any optional argument can be passed. The
@@ -137,9 +139,9 @@ supported by now).
 
 Assume we have a DWI volume hcp1007_crop.nii.gz, whose gradients table
 is stored in hcp1007_crop.bvec and hcp1007_crop.bval (NOTE: the b-values and
-b-vectors must always be stored in different files). We will estimate and
-remove a free-water compartment, then estimate the diffusion tensor on the
-corrected signal, then compute the FA.
+b-vectors must always be stored in different files for NIfTI DWIs). We will
+estimate and remove a free-water compartment, then estimate the diffusion
+tensor on the corrected signal, then compute the FA.
 
 ### Do not forget to add to your path the folder where dmrimatlab is located:
 
@@ -165,6 +167,13 @@ corrected signal, then compute the FA.
       but you need to quote it into "" to avoid conflicts with bash.
   - Note the first output is set to "print" so that the mask threshold is
       printed on screen.
+  - You can otherwise store the output volume in NRRD, with extension .nrrd
+      for attached headers or .nhdr for non-attached headers:
+         -output1=mask.nrrd
+      Note: in general, the dMRI community prefers NIfTI files over
+      NRRD. However, if you use 3-D Slicer as your visualization
+      software, you should move towards NRRD because 3-D Slicer does
+      not properly manage vector-valued volumes stored in NIfTI.
 
 ### Compute the (non) FW-VF with atti2freewater (using the previous mask):
 
@@ -182,6 +191,37 @@ corrected signal, then compute the FA.
       as needed.
   - Note we discard output1, and print outputs 2 and 3 (optimal values found
       for the regularization parameters) directly to the screen.
+
+#### What if we have our DWIs in a NRRD file instead?
+
+  - We can convert the DWIs to NRRD from NIfTI (and vice-versa) with
+      the toolbox function dwinii2nrrd:
+
+###############·
+
+    $ dmrimatlab dwinii2nrrd \
+    -input0:string="hcp1007_crop.nii.gz" \
+    -input1:string="hcp1007_crop.nrrd" \
+    -input2:string="hcp1007_crop.bvec" \
+    -input3:string="hcp1007_crop.bval"
+
+  - Note in this case it is MANDATORY to explicitly use the keyword
+      "string" so that the script directly passes the filenames to the
+      toolbox function and it does not try to internally load the files.
+
+  - Note now the DWIs, the b-values and the b-vectors are all stored
+      in the very same file, but the atti2freewater function expects
+      one different argument for each. This is solved by telling the
+      wrapper script that it should look for these inputs within the
+      NRRD header:
+
+###############·
+
+    $ dmrimatlab atti2freewater -g_b0th=100 \
+    -input0=hcp1007_crop.nrrd \
+    -input1="nrrd:gi" -input2="nrrd:bi" \
+    -output0=nfwvf.nii.gz -output2=print \
+    -output3=print -nu=-1 -lpar=nan -mask=mask.nii.gz
 
 ### Correct the attenuation signal with the (non) FW-VF computed.
 
@@ -224,7 +264,7 @@ corrected signal, then compute the FA.
 
   - NOTE: this is a particular use case where you DO NEED to explicitly set the
       type of the input0 to "atti". What would happen otherwise?
-  - Since corrected_atti.nii.gz is a 4-D nifti, the script would assume by
+  - Since corrected_atti.nii.gz is a 4-D NIfTI, the script would assume by
       default that it contains raw DWI channels. Since this is a atti2-like
       command, it will try to convert from DWI channels to attenuation signals,
       (which input0 is already made of), which will result in uncertain results

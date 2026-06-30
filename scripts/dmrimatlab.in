@@ -1,6 +1,8 @@
 #!/usr/bin/env -S @OCTAVE_EXE_PATH@ --no-gui --no-window-system -q
 addpath('@TOOLBOX_ROOT_PATH@');
 addpath('@SCRIPTS_INSTALL_PATH@');
+addpath('@SCRIPTS_INSTALL_PATH@/IO/nifti');
+addpath('@SCRIPTS_INSTALL_PATH@/IO/nrrd');
 
 #   Note that when Octave is started from an executable script, the built-in function argv returns a cell array containing the command line arguments passed to the executable Octave script, not the arguments passed to the Octave interpreter on the ‘#!’ line of the script. For example, the following program will reproduce the command line that was used to execute the script, not ‘-qf’.
 #
@@ -59,10 +61,10 @@ switch(nargs)
       end
       args = args(2:end);
       [args,gargs] = dmrimatlab_parse_cmd_args(args);
-      [args,niihdr] = dmrimatlab_interpret_cmd_args(args,cmdstr,gargs);
+      [args,hdr] = dmrimatlab_interpret_cmd_args(args,cmdstr,gargs);
       [args,outs] = dmrimatlab_unroll_cmd_args(args);
       fouts = cell(1,length(outs));
       [fouts{:}] = feval(cmd,args{:});
-      dmrimatlab_save_cmd_args(outs,fouts,niihdr);
+      dmrimatlab_save_cmd_args(outs,fouts,hdr);
     end
 end

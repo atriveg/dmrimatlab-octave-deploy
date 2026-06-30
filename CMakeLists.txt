@@ -211,6 +211,9 @@ file(WRITE "${DEPLOY_HELPER}" [=[
 
     message(STATUS "Deploying to: ${OUTPUT_BIN}")
     file(MAKE_DIRECTORY "${OUTPUT_BIN}")
+    file(MAKE_DIRECTORY "${OUTPUT_BIN}/IO")
+    file(MAKE_DIRECTORY "${OUTPUT_BIN}/IO/nrrd")
+    file(MAKE_DIRECTORY "${OUTPUT_BIN}/IO/nifti")
 
     # Generate the main wrapper script
     file(READ "${INPUT_TEMPLATE}" CONTENT)
@@ -223,10 +226,25 @@ file(WRITE "${DEPLOY_HELPER}" [=[
 
     # Copy all auxiliary .m scripts
     message(STATUS "Copying .m scripts from ${SCRIPTS_SRC}...")
+
     file(GLOB M_SCRIPTS "${SCRIPTS_SRC}/*.m" "${SCRIPTS_SRC}/dmrimatlab.help" "${SCRIPTS_SRC}/dmrimatlab.list")
     foreach(SCRIPT ${M_SCRIPTS})
         file(COPY "${SCRIPT}" DESTINATION "${OUTPUT_BIN}")
+        message(STATUS "   Copy: ${SCRIPT}")
     endforeach()
+
+    file(GLOB IONRRD "${SCRIPTS_SRC}/IO/nrrd/*.m")
+    foreach(SCRIPT ${IONRRD})
+        file(COPY "${SCRIPT}" DESTINATION "${OUTPUT_BIN}/IO/nrrd")
+        message(STATUS "   Copy: ${SCRIPT}")
+    endforeach()
+
+    file(GLOB IONIFTI "${SCRIPTS_SRC}/IO/nifti/*.m")
+    foreach(SCRIPT ${IONIFTI})
+        file(COPY "${SCRIPT}" DESTINATION "${OUTPUT_BIN}/IO/nifti")
+        message(STATUS "   Copy: ${SCRIPT}")
+    endforeach()
+
     message(STATUS "Don't forget to add ${OUTPUT_BIN} to your path so that dmrimatlab can be found")
 ]=])
 

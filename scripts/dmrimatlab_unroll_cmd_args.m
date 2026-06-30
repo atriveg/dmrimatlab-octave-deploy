@@ -1,22 +1,22 @@
 function [uargs,outs] = dmrimatlab_unroll_cmd_args(args)
-  outs  = args.outputs;
-  uargs = {};
+outs  = args.outputs;
+uargs = {};
 
-  k=1;
+k=1;
 
-  for n=1:length(args.inputs)
-    uargs{k} = args.inputs(n).value;
+for n=1:length(args.inputs)
+    uargs{k} = args.inputs(n).value; %#ok<AGROW>
     k = k+1;
-  end
+end
 
-  fields = fieldnames(args);
-  fields = fields( ~strcmp(fields,'inputs') );
-  fields = fields( ~strcmp(fields,'outputs') );
-  for n=1:length(fields)
+fields = fieldnames(args);
+fields = fields( ~strcmp(fields,'inputs') );
+fields = fields( ~strcmp(fields,'outputs') );
+for n=1:length(fields)
     field = fields{n};
-    uargs{k}   = field;
-    uargs{k+1} = args.(field).value;
+    uargs{k}   = field; %#ok<AGROW>
+    uargs{k+1} = args.(field).value; %#ok<AGROW>
     k = k+2;
-  end
+end
 
 end
