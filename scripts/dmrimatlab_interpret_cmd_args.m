@@ -318,12 +318,17 @@ if(isempty(istring))
     return;
 end
 istring = strtrim(istring);
-if( strcmp(istring,'print') || isempty(istring) )
+if( isempty(istring) )
+    return;
+end
+pattern = '(print)($|\{([^\}]*)\})';
+tokens  = regexp( istring, pattern, 'tokens');
+if( ~isempty(tokens) )
     return;
 end
 pattern = '.*\.(nii\.gz|nii|nhdr|nrrd|bvals|bvecs|bval|bvec|mat|txt|dat)$';
 tokens  = regexp( istring, pattern, 'tokens');
-if(isempty(tokens))
+if( isempty(tokens) )
     error('All requested outputs must be written to a file, but you provided %s, which has not a valid extension',istring);
 end
 end

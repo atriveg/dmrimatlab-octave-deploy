@@ -17,10 +17,23 @@ if(isempty(fname))
     return;
 end
 fname   = strtrim(fname);
-if(strcmp(fname,'print'))
+
+% Check if this is an output that needs to be printed:
+pattern = '(print)($|\{([^\}]*)\})';
+tokens  = regexp( fname, pattern, 'tokens' );
+if(~isempty(tokens))
+    % It is, indeed
+    % Check if the user provided a name for the output:
+    if(~isempty(tokens{1}{2}))
+        if(~isempty(tokens{1}{3}))
+            % He did:
+            fprintf(1,'%s = ',tokens{1}{3});
+        end
+    end
     disp(fout);
     return;
 end
+
 pattern = '.*\.(nii\.gz|nii|nhdr|nrrd|bvals|bvecs|bval|bvec|mat|txt|dat)';
 tokens  = regexp( fname, pattern, 'tokens');
 if(isempty(tokens))

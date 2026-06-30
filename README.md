@@ -112,8 +112,9 @@ extensions are managed).
     will be written in the same order you provided within the command line.
 
   - The value of each output can be either a file name (.nii/.nii.gz, .nrrd/.nhdr,
-    .mat, .bval(s), .bvec(s), .txt, .dat) or the keyword "print" to show the
-    corresponding output on screen.
+    .mat, .bval(s), .bvec(s), .txt, .dat) or the keyword "print" or
+    "print{varname}" to show the corresponding output on screen (preceded
+    by "varname = ").
 
 + Optional arguments passed as <'key',value> pairs to the toolbox functions are
   passed here as -key=value, so that any optional argument can be passed. The
@@ -151,8 +152,8 @@ tensor on the corrected signal, then compute the FA.
 
     $ dmrimatlab dwi2otsuthreshold  \
     -input0:dwi=hcp1007_crop.nii.gz -input1:bval=hcp1007_crop.bval \
-    -output0=print -output1=mask.nii.gz -kern="[1;1;1]/3" \
-    -bins=100 -allchnl=true
+    -output0=print{otsu_threshold} -output1=mask.nii.gz \
+    -kern="[1;1;1]/3" -bins=100 -allchnl=true
 
   - We have explicitly set -input0 and -input1, but it is not necessary
       in this case because the toolbox function takes these two inputs in this
@@ -166,7 +167,8 @@ tensor on the corrected signal, then compute the FA.
   - Note the kernel can be directly described with an Octave expression,
       but you need to quote it into "" to avoid conflicts with bash.
   - Note the first output is set to "print" so that the mask threshold is
-      printed on screen.
+      printed on screen, something like:
+           otsu_threshold = 121.02
   - You can otherwise store the output volume in NRRD, with extension .nrrd
       for attached headers or .nhdr for non-attached headers:
          -output1=mask.nrrd
@@ -180,8 +182,8 @@ tensor on the corrected signal, then compute the FA.
     $ dmrimatlab atti2freewater -g_b0th=100 \
     -input0=hcp1007_crop.nii.gz \
     -input1=hcp1007_crop.bvec -input2=hcp1007_crop.bval \
-    -output0=nfwvf.nii.gz -output2=print \
-    -output3=print -nu=-1 -lpar=nan -mask=mask.nii.gz
+    -output0=nfwvf.nii.gz -output2=print{nu} \
+    -output3=print{lambda} -nu=-1 -lpar=nan -mask=mask.nii.gz
 
   - Note -g_b0th=100 ensures all b-values below 100 will be considered
       baselines when converting the DWI file to an attenuation signal.
@@ -220,8 +222,8 @@ tensor on the corrected signal, then compute the FA.
     $ dmrimatlab atti2freewater -g_b0th=100 \
     -input0=hcp1007_crop.nrrd \
     -input1="nrrd:gi" -input2="nrrd:bi" \
-    -output0=nfwvf.nii.gz -output2=print \
-    -output3=print -nu=-1 -lpar=nan -mask=mask.nii.gz
+    -output0=nfwvf.nii.gz -output2=print{nu} \
+    -output3=print{lambda} -nu=-1 -lpar=nan -mask=mask.nii.gz
 
 ### Correct the attenuation signal with the (non) FW-VF computed.
 
