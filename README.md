@@ -199,7 +199,7 @@ tensor on the corrected signal, then compute the FA.
   - We can convert the DWIs to NRRD from NIfTI (and vice-versa) with
       the toolbox function dwinii2nrrd:
 
-###############·
+#####·
 
     $ dmrimatlab dwinii2nrrd \
     -input0:string="hcp1007_crop.nii.gz" \
@@ -217,7 +217,7 @@ tensor on the corrected signal, then compute the FA.
       wrapper script that it should look for these inputs within the
       NRRD header:
 
-###############·
+#####·
 
     $ dmrimatlab atti2freewater -g_b0th=100 \
     -input0=hcp1007_crop.nrrd \

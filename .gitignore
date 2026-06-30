@@ -1,0 +1,17 @@
+test/estimate_all.sh
+test/hcp1007_crop.bval
+test/hcp1007_crop.bvec
+test/hcp1007_crop.nii.gz
+CMakeLists.txt.bck
+test/hcp1007_crop.nhdr
+test/hcp1007_crop.raw.gz
+test/results/attbvals.bval
+test/results/attgrads.bvec
+test/results/corrected_atti.nii.gz
+test/results/dti.nii.gz
+test/results/famap.nii.gz
+test/results/lambda1.nii.gz
+test/results/lambda2.nii.gz
+test/results/lambda3.nii.gz
+test/results/mask.nii.gz
+test/results/nfwvf.nii.gz
