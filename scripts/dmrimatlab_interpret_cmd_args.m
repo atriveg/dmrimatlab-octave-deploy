@@ -90,11 +90,12 @@ hdr = [];
                     error('You provided argument type <%s>, which is unrecognized',intrpd.argtype);
             end
         end
-        % If this is an output, we cannot write it yet, so we
-        % just make sure the value is some file we can write
-        % things to
+        % If this is an output, we cannot write it yet:
         if(flag>1)
+            % Make sure the value is some file we can write things to:
             check_valid_extension(arg.value);
+            % Make sure the "argtype, if not empty, is a valid type:
+            intrpd.argtype = check_valid_data_type(arg.argtype);
         end
 
     end
@@ -333,6 +334,45 @@ if( isempty(tokens) )
 end
 end
 
+%% -----------------------------------------------------------------------------
+function outtype = check_valid_data_type( intype )
+if( isempty(intype) || strcmp(intype,'UNK') )
+    outtype = '';
+    return;
+end
+switch(intype)
+    case {'char','string'}
+        outtype = 'char';
+    case {'bool','boolean','logical'}
+        outtype = 'logical';
+    case {'signed char', 'int8', 'int8_t'}
+        outtype = 'int8';
+    case {'uchar', 'unsigned char', 'uint8', 'uint8_t'}
+        outtype = 'uint8';
+    case {'short', 'short int', 'signed short', 'signed short int', ...
+            'int16', 'int16_t'}
+        outtype = 'int16';
+    case {'ushort', 'unsigned short', 'unsigned short int', 'uint16', ...
+            'uint16_t'}
+        outtype = 'uint16';
+    case {'int', 'signed int', 'int32', 'int32_t'}
+        outtype = 'int32';
+    case {'uint', 'unsigned int', 'uint32', 'uint32_t'}
+        outtype = 'uint32';
+    case {'longlong', 'long long', 'long long int', 'signed long long', ...
+            'signed long long int', 'long', 'int64', 'int64_t'}
+        outtype = 'int64';
+    case {'ulonglong', 'unsigned long long', 'unsigned long long int', ...
+            'ulong', 'uint64', 'uint64_t'}
+        outtype = 'uint64';
+    case {'single','float'}
+        outtype = 'single';
+    case {'double'}
+        outtype = 'double';
+    otherwise
+        assert(false, sprintf('Unsupported output data type: %s',intype));
+end
+end
 
 %% -----------------------------------------------------------------------------
 function [args,gi,bi] = prune_dwichannels(args,gi0,bi0,b0th,bmin,bmax)

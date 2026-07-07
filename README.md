@@ -66,7 +66,8 @@ Show the help of a particular command within the dmrimatlab toolbox "as it is":
 Run a commnad:
 
     $ dmrimatlab command -input[#][:type]=value -input[#][:type]=value ...
-                -output[#]=value -output[#]=value ... -key=value -key=value ...
+                -output[#]=value -output[#][:datatype]=value ... 
+                -key=value -key=value ...
 
 This is a wrapper script that allows calling any function from the dmrimatlab
 toolbox (or even core Octave functions) directly from the command line (bash,
@@ -115,6 +116,12 @@ extensions are managed).
     .mat, .bval(s), .bvec(s), .txt, .dat) or the keyword "print" or
     "print{varname}" to show the corresponding output on screen (preceded
     by "varname = ").
+    
+  - An optional "datatype" can be used to tell the script the format that should
+    be used to represent the corresponfing output, whether one of Octave's native
+    types (logical, char, int8/uint8, int16/uint16, int32/uint32, in64/uint64,
+    single, double) or most of any other C-type names (e.g.: float, long, int16
+    unsigned short...).
 
 + Optional arguments passed as <'key',value> pairs to the toolbox functions are
   passed here as -key=value, so that any optional argument can be passed. The
@@ -287,7 +294,7 @@ tensor on the corrected signal, then compute the FA.
 
     $ dmrimatlab spectrum2scalar \
     -input0=lambda1.nii.gz -input1=lambda2.nii.gz -input2=lambda3.nii.gz \
-    -output=famap.nii.gz -scalar=\'fa\' -mask=mask.nii.gz
+    -output:float=famap.nii.gz -scalar=\'fa\' -mask=mask.nii.gz
 
   - Note it is necessary to scape the quotes as \'fa\', since the toolbox 
      function is expecting a string, and otherwise the wrapper script will 
@@ -295,3 +302,7 @@ tensor on the corrected signal, then compute the FA.
      variable fa does not exist.
   - You can alternatively force the wrapper script to interpret a string as
      it is by using: <-scalar:string=fa>.
+  - We have forced the script to store the final FA map as a floating
+     point number with single precision (instead of the default double
+     precision). NOTE: all calculations will always be carried out with
+     double precision regardless of the final output type chosen.

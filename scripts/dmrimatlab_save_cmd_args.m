@@ -16,7 +16,12 @@ fname = out.value;
 if(isempty(fname))
     return;
 end
-fname   = strtrim(fname);
+fname = strtrim(fname);
+
+ftype = out.argtype;
+if( ~isempty(ftype) )
+    fout = cast( fout, ftype );
+end
 
 % Check if this is an output that needs to be printed:
 pattern = '(print)($|\{([^\}]*)\})';
