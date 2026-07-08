@@ -87,8 +87,8 @@ ExternalProject_Add(octave_proj
 
 # --- CONFIGURATION OPTIONS ---
 # Default to OPENBLAS as it's the most portable for local builds
-set(BLAS_FOR_MEX "OPENBLAS" CACHE STRING "Options: SYSTEM, OPENBLAS, MKL")
-set_property(CACHE BLAS_FOR_MEX PROPERTY STRINGS SYSTEM OPENBLAS MKL)
+set(BLAS_FOR_MEX "OPENBLAS" CACHE STRING "Options: SYSTEM, OPENBLAS, MKL, CUSTOM")
+set_property(CACHE BLAS_FOR_MEX PROPERTY STRINGS SYSTEM OPENBLAS MKL CUSTOM)
 if(BLAS_FOR_MEX STREQUAL "SYSTEM")
     # Search for system-wide reference implementation (Netlib)
     find_library(BLAS_LIB NAMES blas)
@@ -128,6 +128,32 @@ elseif(BLAS_FOR_MEX STREQUAL "MKL")
         # 3. Actual install
         INSTALL_COMMAND     <DOWNLOADED_FILE> -a -s --install-dir=${INSTALL_PREFIX}/mkl --eula accept && rm -rf "$ENV{HOME}/intel" "$ENV{HOME}/.intel"
     )
+elseif(BLAS_FOR_MEX STREQUAL "CUSTOM")
+    set(CUSTOM_BLAS_PATH "" CACHE FILEPATH "Set the full path to your BLAS library")
+    if(NOT CUSTOM_BLAS_PATH)
+        message(FATAL_ERROR "Please set CUSTOM_BLAS_PATH when using CUSTOM BLAS/LAPACK implementations")
+    endif()
+    if(NOT EXISTS ${CUSTOM_BLAS_PATH})
+        message(FATAL_ERROR "The file in CUSTOM_BLAS_PATH does not exist: ${CUSTOM_BLAS_PATH}")
+    endif()
+    message(STATUS "Using BLAS: ${CUSTOM_BLAS_PATH}")
+
+    set(BLAS_LIB ${CUSTOM_BLAS_PATH})
+    get_filename_component(BLAS_DIR "${BLAS_LIB}" DIRECTORY)
+
+    set(CUSTOM_LAPACK_PATH "" CACHE FILEPATH "Set the full path to your LAPACK library")
+    if(NOT CUSTOM_LAPACK_PATH)
+        message(FATAL_ERROR "Please set CUSTOM_LAPACK_PATH when using CUSTOM BLAS/LAPACK implementations")
+    endif()
+    if(NOT EXISTS ${CUSTOM_LAPACK_PATH})
+        message(FATAL_ERROR "The file in CUSTOM_LAPACK_PATH does not exist: ${CUSTOM_LAPACK_PATH}")
+    endif()
+    message(STATUS "Using LAPACK: ${CUSTOM_LAPACK_PATH}")
+
+    set(LAPACK_LIB ${CUSTOM_LAPACK_PATH})
+    get_filename_component(LAPACK_DIR "${LAPACK_LIB}" DIRECTORY)
+
+    set(BLAS_CONFIG "custom")
 endif()
 
 set(TOOLBOX_DIR "${CMAKE_BINARY_DIR}/toolbox_build")
@@ -157,6 +183,8 @@ ExternalProject_Add(dmrimatlab_proj
     COMMAND echo "LOCAL_OPENBLAS_BUILD_WARNING=no" >> <SOURCE_DIR>/mexcode/config.octave
     COMMAND echo "MKL_ROOT=${MKL_ROOT}" >> <SOURCE_DIR>/mexcode/config.octave
     COMMAND echo "MKL_REDIST=${MKL_REDIST}" >> <SOURCE_DIR>/mexcode/config.octave
+    COMMAND echo "CUSTOM_BLAS=${BLAS_LIB}" >> <SOURCE_DIR>/mexcode/config.octave
+    COMMAND echo "CUSTOM_LAPACK=${LAPACK_LIB}" >> <SOURCE_DIR>/mexcode/config.octave
     # STEP 5: Create the .m script using the helper and execute it
     COMMAND ${CMAKE_COMMAND}
             -DM_FILE=<BINARY_DIR>/build_mex.m
