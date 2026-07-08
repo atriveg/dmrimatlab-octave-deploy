@@ -262,7 +262,7 @@ switch (matlabType)
     case {'double'}
         metaType = 'double';
     otherwise
-        assert(false, 'Unsupported Matlab data type')
+        assert(false, 'Unsupported Matlab data type');
 end
 end
 
