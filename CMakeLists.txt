@@ -87,8 +87,8 @@ ExternalProject_Add(octave_proj
 
 # --- CONFIGURATION OPTIONS ---
 # Default to OPENBLAS as it's the most portable for local builds
-set(BLAS_FOR_MEX "OPENBLAS" CACHE STRING "Options: SYSTEM, OPENBLAS, MKL, CUSTOM")
-set_property(CACHE BLAS_FOR_MEX PROPERTY STRINGS SYSTEM OPENBLAS MKL CUSTOM)
+set(BLAS_FOR_MEX "OPENBLAS" CACHE STRING "Options: SYSTEM, OPENBLAS, BLIS, MKL, CUSTOM")
+set_property(CACHE BLAS_FOR_MEX PROPERTY STRINGS SYSTEM OPENBLAS BLIS MKL CUSTOM)
 if(BLAS_FOR_MEX STREQUAL "SYSTEM")
     # Search for system-wide reference implementation (Netlib)
     find_library(BLAS_LIB NAMES blas)
@@ -101,6 +101,8 @@ if(BLAS_FOR_MEX STREQUAL "SYSTEM")
 elseif(BLAS_FOR_MEX STREQUAL "OPENBLAS")
     set(BLAS_CONFIG "openblas-local")
     set(LOCAL_OPENBLAS_SUFFIX "local")
+elseif(BLAS_FOR_MEX STREQUAL "BLIS")
+    set(BLAS_CONFIG "blis-local")
 elseif(BLAS_FOR_MEX STREQUAL "MKL")
     # Intel OneAPI MKL will be used only to build mex files.
     set(MKL_PROJ_DEPEND "mkl_proj")
@@ -181,6 +183,7 @@ ExternalProject_Add(dmrimatlab_proj
     COMMAND echo "BLAS_CONFIG=${BLAS_CONFIG}" >> <SOURCE_DIR>/mexcode/config.octave
     COMMAND echo "LOCAL_OPENBLAS_SUFFIX=${LOCAL_OPENBLAS_SUFFIX}" >> <SOURCE_DIR>/mexcode/config.octave
     COMMAND echo "LOCAL_OPENBLAS_BUILD_WARNING=no" >> <SOURCE_DIR>/mexcode/config.octave
+    COMMAND echo "LOCAL_BLIS_BUILD_WARNING=no" >> <SOURCE_DIR>/mexcode/config.octave
     COMMAND echo "MKL_ROOT=${MKL_ROOT}" >> <SOURCE_DIR>/mexcode/config.octave
     COMMAND echo "MKL_REDIST=${MKL_REDIST}" >> <SOURCE_DIR>/mexcode/config.octave
     COMMAND echo "CUSTOM_BLAS=${BLAS_LIB}" >> <SOURCE_DIR>/mexcode/config.octave
