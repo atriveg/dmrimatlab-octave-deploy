@@ -68,6 +68,13 @@ ExternalProject_Add(octave_proj
     URL            https://ftp.gnu.org/gnu/octave/octave-9.1.0.tar.gz
     DOWNLOAD_EXTRACT_TIMESTAMP TRUE
     PREFIX         ${OCTAVE_DIR}
+    # Patch Octave to prefer symbols from the library being loaded over
+    # symbols already present in the global namespace. This avoids BLAS/LAPACK
+    # symbol interposition when loading MEX files linked against alternative
+    # numerical libraries.
+    PATCH_COMMAND  ${CMAKE_COMMAND}
+        -DFILE_TO_PATCH=<SOURCE_DIR>/liboctave/util/oct-shlib.cc
+        -P ${CMAKE_SOURCE_DIR}/cmake/patch_octave.cmake
     # We pass the environment variables inside CONFIGURE_COMMAND to ensure they are local to Octave
     CONFIGURE_COMMAND <SOURCE_DIR>/configure
         LIBS=${OCTAVE_BLAS_LIBS}
