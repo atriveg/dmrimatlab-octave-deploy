@@ -39,8 +39,9 @@ Within the folder where CMakeLists.txt is located:
     # Choose one of the allowed BLAS implementations
     # to build mex files against:
     # $ cmake -DBLAS_FOR_MEX=SYSTEM ../
-    $ cmake -DBLAS_FOR_MEX=MKL ../
+    # $ cmake -DBLAS_FOR_MEX=MKL ../
     # $ cmake -DBLAS_FOR_MEX=OPENBLAS ../
+    $ cmake -DBLAS_FOR_MEX=BLIS ../
     $ make
 
 You can temporarily or permanently add to your path the folder "install/bin"
@@ -88,7 +89,7 @@ extensions are managed).
   - The "type" helps the function decide how it should interpret the value of the
     input. For example, a NIfTI (or NRRD) file with a 4-D volume might contain
     DWI signals, or SH coefficients, or DTI components, or vector components...
-    You may specify the actual type of input suing one of [ vol | mask | vec
+    You may specify the actual type of input using one of [ vol | mask | vec
     | dti | sh | dwi | atti | bvec | bval | raw | string | UNK ]. NOTE: most of
     the time you won't need to make this type explicit, as long as either 1)
     it is not actually relevant or 2) the wrapper script will be able to
@@ -120,7 +121,7 @@ extensions are managed).
   - An optional "datatype" can be used to tell the script the format that should
     be used to represent the corresponfing output, whether one of Octave's native
     types (logical, char, int8/uint8, int16/uint16, int32/uint32, in64/uint64,
-    single, double) or most of any other C-type names (e.g.: float, long, int16
+    single, double) or most of any other C-type names (e.g.: float, long, int16,
     unsigned short...).
 
 + Optional arguments passed as <'key',value> pairs to the toolbox functions are
