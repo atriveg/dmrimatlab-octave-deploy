@@ -107,7 +107,6 @@ if(BLAS_FOR_MEX STREQUAL "SYSTEM")
     #################################################################################################
 elseif(BLAS_FOR_MEX STREQUAL "OPENBLAS")
     set(BLAS_CONFIG "openblas-local")
-    set(LOCAL_OPENBLAS_SUFFIX "local")
 elseif(BLAS_FOR_MEX STREQUAL "BLIS")
     set(BLAS_CONFIG "blis-local")
 elseif(BLAS_FOR_MEX STREQUAL "MKL")
@@ -188,9 +187,9 @@ ExternalProject_Add(dmrimatlab_proj
     # STEP 4: Generate config.octave
     BUILD_COMMAND ${CMAKE_COMMAND} -E echo "GCC_FLAGS=-DMX_COMPAT_64 -D_GNU_SOURCE -fexceptions -fPIC -fno-omit-frame-pointer -pthread -fwrapv -O3 -DNDEBUG" > <SOURCE_DIR>/mexcode/config.octave
     COMMAND echo "BLAS_CONFIG=${BLAS_CONFIG}" >> <SOURCE_DIR>/mexcode/config.octave
-    COMMAND echo "LOCAL_OPENBLAS_SUFFIX=${LOCAL_OPENBLAS_SUFFIX}" >> <SOURCE_DIR>/mexcode/config.octave
     COMMAND echo "LOCAL_OPENBLAS_BUILD_WARNING=no" >> <SOURCE_DIR>/mexcode/config.octave
     COMMAND echo "LOCAL_BLIS_BUILD_WARNING=no" >> <SOURCE_DIR>/mexcode/config.octave
+    COMMAND echo "BUILD_DYNAMIC=yes" >> <SOURCE_DIR>/mexcode/config.octave
     COMMAND echo "MKL_ROOT=${MKL_ROOT}" >> <SOURCE_DIR>/mexcode/config.octave
     COMMAND echo "MKL_REDIST=${MKL_REDIST}" >> <SOURCE_DIR>/mexcode/config.octave
     COMMAND echo "CUSTOM_BLAS=${BLAS_LIB}" >> <SOURCE_DIR>/mexcode/config.octave
