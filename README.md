@@ -21,6 +21,7 @@ Funding:
         Agencia Estatal de Investigación, Gobierno de España:
         PID2021-124407NB-I00
         TED2021-130090B-I00
+        PID2024-158963NB-I00
 
 In case you use the package for your own research, we ask you to kindly cite it as:
 
