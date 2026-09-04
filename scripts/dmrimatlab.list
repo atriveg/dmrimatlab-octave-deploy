@@ -65,6 +65,8 @@
    - Analysis:
       [> atti2freewater
       [> atti2freewaterTensor
+   - Synthesis (FW-VF correction)
+      [> atti2fwcatti
 
 + Spherical convolution, spherical means (MiSFIT)
    - Analysis:
