@@ -236,8 +236,8 @@ tensor on the corrected signal, then compute the FA.
 
 ### Correct the attenuation signal with the (non) FW-VF computed.
 
-   Since there is not a specific toolbox function performing this step, we will
-   use built-in Octave commands in the form of a user-defined anonymous function.
+   Since FW-VF correction is just an algebraic operation, we can simply use
+   built-in Octave commands in the form of a user-defined anonymous function.
    Note we want to solve for the confined water compartment in:
           atti_total = f * atti_confined + (1-f) * exp(-bi*D0)
    The command reads:
@@ -265,6 +265,16 @@ tensor on the corrected signal, then compute the FA.
       limit for which the tensor model is commonly accepted to apply, bearing
       in mind that the output signal will only be used to estimate the diffusion
       tensor.
+
+  Alternatively, we can just resort to the ad-hoc toolbox function atti2fwcatti,
+  which returns both the corrected attenuation signal and the gradients table
+  (that will be internally corrected by the wrapper script):
+
+    $ dmrimatlab atti2fwcatti -g_b0th=100 -g_bmax=2000 \
+    -input0=hcp1007_crop.nii.gz -input1=hcp1007_crop.bvec \
+    -input2=hcp1007_crop.bval -input3=nfwvf.nii.gz \
+    -output0=corrected_atti.nii.gz -output1=attgrads.bvec \
+    -output2=attbvals.bval
 
 ### Estimate the diffusion tensor from the corrected attenuation signal:
 
