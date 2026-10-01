@@ -39,7 +39,7 @@ hdr = [];
             end
             % Finally, check the argument type is a proper one:
             switch(intrpd.argtype)
-                case {'vec','sh','dwi','atti','dti','vol','raw','coeff','string','UNK'}
+                case {'vec','sh','dwi','atti','dti','dkt','vol','raw','coeff','string','UNK'}
                     % Nothing to do
                 case 'bval'
                     intrpd.value = intrpd.value(:);
@@ -270,6 +270,8 @@ else
                             atype = 'coeff';
                         elseif(strncmp(cmdstr,'hydidsi2',8))
                             atype = 'coeff';
+                        elseif(strncmp(cmdstr,'dkt2',4))
+                            atype = 'dti';
                         else
                             atype = 'dti';
                         end
@@ -290,6 +292,8 @@ else
                             atype = 'coeff';
                         elseif(strncmp(cmdstr,'hydidsi2',8))
                             atype = 'coeff';
+                        elseif(strncmp(cmdstr,'dkt2',4))
+                            atype = 'dkt';
                         else
                             atype = 'dwi';
                         end

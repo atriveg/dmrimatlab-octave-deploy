@@ -34,8 +34,8 @@ extensions are managed).
     input. For example, a NIfTI (or NRRD) file with a 4-D volume might contain
     DWI signals, or SH coefficients, or DTI components, or vector components...
     You may specify the actual type of input using one of [ vol | mask | vec
-    | dti | sh | dwi | atti | bvec | bval | raw | string | UNK ]. NOTE: most of
-    the time you won't need to make this type explicit, as long as either 1)
+    | dti | dkt | sh | dwi | atti | bvec | bval | raw | string | UNK ]. NOTE: most
+    of the time you won't need to make this type explicit, as long as either 1)
     it is not actually relevant or 2) the wrapper script will be able to
     automatically detect it. Use cases where this is necessary include b-values
     and b-vectors provided in non-standard file formats (i.e. others than .bval(s)

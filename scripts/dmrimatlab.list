@@ -19,11 +19,21 @@
 + Diffusion Tensor Imaging (DTI, DT-MRI)
    - Analysis:
       [> atti2dti
+   - Synthesis:
+      [> dti2signal
    - Quantification:
       [> dti2spectrum
       [> spectrum2scalar
       [> spectrum2colorcode
       [> spectrum2fdi
+
++ Diffusion Kurtosis Imaging (DKI)
+   - Analysis:
+      [> atti2dkt
+   - Synthesis:
+      [> dkt2atti
+   - Quantification:
+      [> dkt2kurtosis
 
 + Spherical Harmonics (SH)
    - Analysis:
@@ -112,7 +122,7 @@
    - Utilities:
       [> labelmap2seeds
 
-+ Tractography paths with minimal global costs
++ Tractography paths with minimal global costs (Finsler tractography)
    - Computation of global cost:
       [> fastSweeping
    - Fiber-tracking:
