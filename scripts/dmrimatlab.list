@@ -111,11 +111,14 @@
       [> atti2hydidsi
    - Synthesis:
       [> hydidsi2atti
+      [> hydidsi2eap
    - Orientation distribution functions (ODFs):
       [> hydidsi2shodf
    - Quantification:
       [> hydidsi2index
       [> hydidsi2ng
+   - Sampling:
+      [> hydidsi2samples
 
 + Tractography with Runge-Kutta integration of DTI
    - Fiber-tracking algorithms:
