@@ -84,6 +84,7 @@
       [> atti2micro
    - Synthesis:
       [> micro2atti
+      [> micro2eap
    - Orientation distribution functions (ODFs):
       [> micro2shodf
       [> micro2shsqrtodf
